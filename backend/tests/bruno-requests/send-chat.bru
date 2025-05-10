@@ -1,0 +1,18 @@
+meta {
+  name: send-chat
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{protocole}}://{{host}}:{{port}}/chat
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "message": "Hello AI"
+  }
+  
+}

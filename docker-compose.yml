@@ -1,0 +1,46 @@
+services:
+  backend:
+    build: ./backend
+    container_name: gdg-backend
+    command: python -m uvicorn braynr_coach.main:app --host 0.0.0.0 --port 8000 --reload
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/gdg-postgres
+    networks:
+      - gdg-network
+
+  frontend:
+    build: ./frontend
+    container_name: gdg-frontend
+    command: npm run start
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - gdg-network
+
+  db:
+    image: postgres:latest
+    container_name: gdg-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: gdg-postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - gdg-network
+
+volumes:
+  pg_data:
+
+networks:
+  gdg-network:
