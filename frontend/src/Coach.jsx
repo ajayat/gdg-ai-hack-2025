@@ -7,6 +7,8 @@ function Coach() {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [score, setScore] = useState(null);
+  const [correctAnswer, setCorrectAnswer] = useState('');
+
 
   const fetchQuestion = async () => {
     try {
@@ -15,7 +17,6 @@ function Coach() {
       setAnswer('');
       setScore(null);
     } catch (err) {
-      console.error("Error fetching question:", err);
       setQuestion("⚠️ Unable to load question. Please try again later.");
     }
   };
@@ -27,7 +28,16 @@ function Coach() {
       answer,
     });
     setScore(res.data.score);
+    setCorrectAnswer(res.data.answer);
   };
+
+  const sendFeedback = async (value) => {
+    await axios.post('http://localhost:8000/feedback', {
+      question,
+      feedback: value,
+    });
+  };
+
 
   useEffect(() => {
     document.title = "Braynr Coach - Learning Session";
@@ -54,18 +64,29 @@ function Coach() {
             />
           </label>
           <button type="submit" className="submit-btn">Submit Answer</button>
+          <div className="feedback-buttons">
+            <button type="button" className="like-btn" onClick={() => sendFeedback(1)}>
+              👍 Like
+            </button>
+            <button type="button" className="dislike-btn" onClick={() => sendFeedback(0)}>
+              👎 Dislike
+            </button>
+          </div>
         </form>
 
-        {score !== null && (
-          <>
-            <div className="score-box">
-              <strong>Score:</strong> {score}/100
-            </div>
-            <button onClick={fetchQuestion} className="submit-btn">
-              Next Question
-            </button>
-          </>
-        )}
+      {score !== null && (
+        <>
+          <div className="score-box">
+            <strong>Score:</strong> {score}/100
+          </div>
+          <div className="correct-answer-box">
+            <strong>Correct Answer:</strong> {correctAnswer}
+          </div>
+          <button onClick={fetchQuestion} className="submit-btn">
+            Next Question
+          </button>
+        </>
+      )}
       </div>
     </div>
   );

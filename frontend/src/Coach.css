@@ -66,3 +66,48 @@
   border-radius: 0.5rem;
   color: #0369a1;
 }
+
+.correct-answer-box {
+  margin-top: 1rem;
+  font-size: 1rem;
+  background-color: #fef9c3;
+  padding: 1rem;
+  border-left: 4px solid #facc15;
+  border-radius: 0.5rem;
+  color: #92400e;
+}
+
+
+.feedback-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.like-btn,
+.dislike-btn {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.like-btn {
+  background-color: #22c55e; /* green */
+  color: white;
+}
+
+.like-btn:hover {
+  background-color: #16a34a;
+}
+
+.dislike-btn {
+  background-color: #ef4444; /* red */
+  color: white;
+}
+
+.dislike-btn:hover {
+  background-color: #dc2626;
+}

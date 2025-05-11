@@ -1,13 +1,12 @@
 from pathlib import Path
-from tkinter.messagebox import QUESTION
 from dotenv import load_dotenv
-import random
 import pandas as pd
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
+from transformers import pipeline
 
 # Load environment variables from .env file
 load_dotenv()
@@ -28,6 +27,11 @@ app.add_middleware(
     allow_credentials=True,
 )
 
+questions = pd.read_csv(DATA_DIR / "Chapter1_Q.csv", sep=";")
+# Loads a classifier finetuned for Natural Language Inference task
+classifier = pipeline("text-classification", "ajayat/xlm-roberta-large-xnli")
+history = []  # Store feedback history
+
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
@@ -36,38 +40,39 @@ async def root():
     return HTMLResponse(content=content)
 
 
-class QuizItem(BaseModel):
-    question: str
-    answer: str
-
-
-@app.post("/coach")
-async def evaluate_quiz(item: QuizItem):
-    # Dummy scoring logic — replace with actual NLP model or rubric logic
-    if item.answer.strip():
-        score = min(len(item.answer), 100)
-    else:
-        score = 0
-    return {"score": score}
-
-
-# Mock question list
-questions = pd.read_csv(DATA_DIR / "Chapter1_Q.csv", sep=";")
-print(questions.head())
-
-
 @app.get("/question")
 def get_question():
     return {"question": questions.sample(1)["Q"].values[0]}
 
 
-class AnswerInput(BaseModel):
+class QuizItem(BaseModel):
     question: str
     answer: str
 
 
 @app.post("/score")
-def score_answer(item: AnswerInput):
-    # Placeholder scoring logic
-    score = min(len(item.answer.strip()), 100)
-    return {"score": score}
+async def evaluate_quiz(item: QuizItem):
+    # Match the correct answer
+    match = questions[questions["Q"] == item.question]
+    if match.empty:
+        return {"score": 0, "answer": "No answer available"}
+
+    correct_answer = match.iloc[0]["A"]
+    # Provide input as a dictionary with text and text_pair keys
+    result = classifier({"text": item.answer, "text_pair": correct_answer}, top_k=None)
+    # Extract the score from the result
+    df = pd.DataFrame(result)
+    score = df[df["label"] == "LABEL_0"]["score"].values[0]
+    return {"score": round(score * 100), "answer": correct_answer}
+
+
+class FeedbackInput(BaseModel):
+    question: str
+    feedback: int  # 1 = like, 0 = dislike
+
+
+@app.post("/feedback")
+def receive_feedback(data: FeedbackInput):
+    history.append({"question": data.question, "feedback": data.feedback})
+    # TODO: some logic to train the model with the feedback
+    print(f"Feedback received: {data.question} - {data.feedback}")
