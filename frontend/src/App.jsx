@@ -1,34 +1,21 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './App.css';
 
 function App() {
-  const [input, setInput] = useState('');
-  const [response, setResponse] = useState('');
-
   useEffect(() => {
-    document.title = "Braynr Coach";
+    document.title = "Braynr Coach Agent";
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const res = await axios.post('http://localhost:8000/chat', { message: input });
-    setResponse(res.data.response);
-  };
-
   return (
-    <div className="container">
-      <h1>AI Agent Chat</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type a message"
-        />
-        <button type="submit">Send</button>
-      </form>
-      <p><strong>Response:</strong> {response}</p>
+    <div className="hero">
+      <h1 className="hero-title">Braynr Coach Agent</h1>
+      <p className="hero-subtitle">
+        Your personal AI-powered learning coach. Practice, reflect, and improve — all in one place.
+      </p>
+      <Link to="/new-course">
+        <button className="hero-button">Start Learning</button>
+      </Link>
     </div>
   );
 }
